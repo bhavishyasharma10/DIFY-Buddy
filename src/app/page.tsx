@@ -128,15 +128,15 @@ export default function Home() {
               <AccordionContent className="p-4 bg-white rounded-b-lg">
                 <CardContent>
                   <p className="mb-2 text-gray-700"><strong>Reason:</strong> {habitData.reason}</p>
-                  {/* <p className="mb-2 text-gray-700"><strong>Goal:</strong> {habitData.plan.goal}</p>
+                  <p className="mb-2 text-gray-700"><strong>Goal:</strong> {habitData.plan.goal}</p>
                   <ul className="list-disc pl-5 mb-4">
                     {habitData.plan.steps.map((step, index) => (
-                      <li key={index} className="text-gray-600">{step}</li>
+                      <li key={`${step}-${index}`} className="text-gray-600">{step}</li>
                     ))}
-                  </ul> */}
-                  {/* <Button className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => handleSaveHabit(habitData.habit, habitData.plan)}>
-                    <span className="mr-2">💾</span> Save Plan
-                  </Button> */}
+                  </ul>
+                  <Button className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => handleSaveHabit(habitData.habit, habitData.plan)}>
+                    <span className="mr-2">💾</span> Personalize it
+                  </Button>
                 </CardContent>
               </AccordionContent>
             </AccordionItem>

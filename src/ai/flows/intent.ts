@@ -73,7 +73,14 @@ const ParseIntentOutputSchema = z.object({
   habitSuggestions: z.array(z.object({
     habit: z.string(),
     reason: z.string(),
-  })).describe('Habits the user should consider adopting, with reasons.'),
+    plan: z.object({
+      goal: z.string(), // e.g., "Build a daily meditation practice"
+      steps: z.array(z.string()), // e.g., ["Start with 2 mins", "Track on habit app", ...]
+      frequency: z.string(), // "daily", "3 times a week"
+      duration: z.string(), // "10 minutes"
+      totalDays: z.number(), // e.g., 14
+    }),
+  })).describe('Habits the user should consider, with a personalized, actionable plan.'),
 });
 
 const instructions = `You are an AI that analyzes daily journal entries to extract meaningful information in structured categories.
@@ -94,7 +101,13 @@ Instructions:
 - Extract any **to-dos** or tasks from the entry, and categorize each as **work** or **personal**.
 - Detect any **reminders**, including natural language or ISO-style time information.
 - Identify any **habit suggestions** the user would benefit from, either explicit or implied.
-  - For each suggested habit, provide a reason why it would be beneficial.
+  - For each suggested habit, provide a personalized and motivational **plan** including:
+    - A specific **goal**
+    - A list of **steps** to accomplish it
+    - Recommended **frequency** (e.g. daily, weekly)
+    - **Duration** per session (e.g. "10 minutes", "30 minutes")
+    - **Total number of days** to build the habit
+  - Make the plan actionable and split it into small, trackable steps across the total days.
 
 Output your results in JSON format exactly matching the required schema.`;
 
