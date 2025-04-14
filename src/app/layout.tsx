@@ -48,7 +48,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   }, [setUser, router]);
 
   if (!user) {
-    return <LoginPage />;
+    return (
+      <html lang="en">
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <LoginPage />
+        </body>
+      </html>
+    );
   }
   
   return (
