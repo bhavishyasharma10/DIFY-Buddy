@@ -17,6 +17,9 @@ export const handleNewEntry = async (input: string, userId: string) => {
   const hasThoughts = parsedEntry.thoughts.length;
   const hasReflections = parsedEntry.reflections.length;
   const hasAffirmations = parsedEntry.affirmations.length;
+  const hasTopics = parsedEntry.topics.length;
+  const hasGoals = parsedEntry.goals.length;
+  const hasStruggles = parsedEntry.struggles.length;
   const hasJournalData = hasHighlights || hasGratitudes || hasThoughts || hasReflections || hasAffirmations;
 
   /** Add journal insights if present */
@@ -28,6 +31,12 @@ export const handleNewEntry = async (input: string, userId: string) => {
       thoughts: parsedEntry.thoughts,
       reflections: parsedEntry.reflections,
       affirmations: parsedEntry.affirmations,
+      tone: parsedEntry.tone,
+      mood: parsedEntry.mood,
+      energy: parsedEntry.energy,
+      topics: parsedEntry.topics,
+      goals: parsedEntry.goals,
+      struggles: parsedEntry.struggles,
     });
 
     if (hasHighlights) {
@@ -44,6 +53,18 @@ export const handleNewEntry = async (input: string, userId: string) => {
     }
     if (hasAffirmations) {
       actionMessages.push(`Affirmations: ${parsedEntry.affirmations.join(', ')}`);
+    }
+
+    if (hasTopics) {
+      actionMessages.push(`Topics: ${parsedEntry.topics.join(', ')}`);
+    }
+
+    if (hasGoals) {
+      actionMessages.push(`Goals: ${parsedEntry.goals.join(', ')}`);
+    }
+    
+    if (hasStruggles) {
+      actionMessages.push(`Struggles: ${parsedEntry.struggles.join(', ')}`);
     }
   }
 
