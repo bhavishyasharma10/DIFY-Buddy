@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useUserStore } from '@/lib/zustand/useUserStore';
+import LoginPage from './login';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,7 +28,7 @@ const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const { setUser } = useUserStore((state) => state);
+  const { user, setUser } = useUserStore((state) => state);
   const router = useRouter();
 
   useEffect(() => {
@@ -38,16 +39,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           email: currentUser.email,
           name: currentUser.displayName,
         });
-        router.push('/'); 
       } else {
         setUser(null);
-        router.push('/login');
       }
     });
 
     return () => unsubscribe();
   }, [setUser, router]);
 
+  if (!user) {
+    return <LoginPage />;
+  }
+  
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
