@@ -1,6 +1,6 @@
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth, googleAuthProvider } from '@/lib/firebase'; 
-import useUserStore from '@/lib/zustand/useUserStore';
+import { useUserStore } from '@/lib/zustand/useUserStore';
 
 const LoginPage = () => {
   const { setUser } = useUserStore();

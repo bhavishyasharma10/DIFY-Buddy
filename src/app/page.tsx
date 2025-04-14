@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import useUserStore from '@/lib/zustand/useUserStore';
+import { useUserStore } from '@/lib/zustand/useUserStore';
 import LoginPage from './login';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
