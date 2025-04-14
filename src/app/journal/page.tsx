@@ -7,16 +7,13 @@ import {Badge} from '@/components/ui/badge';
 import { useJournalStore } from '@/lib/zustand/useJournalStore';
 import { useTodoStore } from '@/lib/zustand/useTodoStore';
 import { ParseJournal } from '@/ai/flows/intent';
-import { useUserStore } from '@/lib/zustand/useUserStore';
 
-const JournalPage: React.FC = () => {
-  const { user } = useUserStore();
+const JournalPage: React.FC = () => { 
   const { journals, fetchJournals } = useJournalStore();  
-  const { todos, fetchTodos, updateTodo } = useTodoStore();
-  const userId = user?.id ?? '';
-
+  const { todos, updateTodo, fetchTodos } = useTodoStore();
+  
   const journalEntries = useMemo(() => {
-    return journals.reduce((acc: ParseJournal, item) => {
+      return journals.reduce((acc: ParseJournal, item) => {
       const keys: (keyof ParseJournal)[] = ['affirmations', 'highlights', 'gratitudes', 'thoughts', 'reflections'];
       for (const key of keys) {
         acc[key] = (acc[key] || []).concat(item[key] || []);
@@ -25,17 +22,16 @@ const JournalPage: React.FC = () => {
     }, {} as ParseJournal);
   }, [journals]);
 
-  useEffect(() => {
-    fetchJournals(userId);
-    fetchTodos(userId);
-  }, [fetchJournals, fetchTodos]);
-
   const toggleTodo = (index: number) => {
     const updatedTodos = [...todos];
     updatedTodos[index].status = updatedTodos[index].status === 'completed' ? 'pending' : 'completed';
     updateTodo(updatedTodos[index]);
   };
 
+  useEffect(() => {
+    fetchJournals();
+    fetchTodos();
+  }, []);
   return (
     <div className="container mx-auto p-6">
       <Card className="w-full max-w-3xl mx-auto">

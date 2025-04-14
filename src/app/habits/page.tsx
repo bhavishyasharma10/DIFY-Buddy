@@ -1,25 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {useToast} from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useHabitSuggestionStore } from '@/lib/zustand/useHabitSuggestionStore';
 import { useJournalStore } from '@/lib/zustand/useJournalStore';
 import { Button } from '@/components/ui/button';
 import { habitPlanner, ParseHabitPlanOutput } from '@/ai/flows/habitPlanner';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-
 const HabitsPage = () => {
   const { toast } = useToast();
-  const { habitSuggestions } = useHabitSuggestionStore(state => state);
-  const { journals } = useJournalStore(state => state)
+  const { habitSuggestions, fetchHabitSuggestions } = useHabitSuggestionStore(state => state);
+  const { journals, fetchJournals } = useJournalStore(state => state);
   const [habitPlan, setHabitPlan] = useState<ParseHabitPlanOutput | null>(null);
 
-  const handleGeneratePlan = async (index: number) => {
+  useEffect(() => {
+    fetchHabitSuggestions();
+    fetchJournals();
+  }, []);
+
+  const handleGeneratePlan = async (habitSuggestion: any) => {
     try {
       const input = {
-        habitToPlan: [habitSuggestions[index]],
+        habitToPlan: [habitSuggestion],
         journalEntries: journals.map(
           journal => ({
             highlights: journal.highlights,
@@ -52,7 +56,7 @@ const HabitsPage = () => {
         variant: 'destructive',
       });
     }
-  };
+  }; 
 
   return (
     <div className="container mx-auto p-6">
@@ -61,8 +65,8 @@ const HabitsPage = () => {
           <CardTitle className="text-2xl font-bold">Habit Suggestions</CardTitle>
         </CardHeader>
         <CardContent className="p-8">
-          {habitSuggestions.map((suggestion, index) => (
-            <React.Fragment key={index}>
+          {habitSuggestions.map((suggestion) => (
+            <React.Fragment key={suggestion.id}>
               <Card className="mb-4">
                 <CardHeader className="p-4">
                   <CardTitle>{suggestion.habit}</CardTitle>
@@ -71,13 +75,13 @@ const HabitsPage = () => {
                   <p className="text-sm text-gray-600">{suggestion.reason}</p>
                 </CardContent>
               </Card>
-              <div className="mt-6">
-                <Button onClick={() => handleGeneratePlan(index)}>Generate Habit Plan</Button>
-              </div>
+                <div className="mt-6">
+                  <Button onClick={() => handleGeneratePlan(suggestion)}>Generate Habit Plan</Button>
+                </div>
             </React.Fragment>
           ))}
-           {habitPlan && habitPlan.habitPlan.length > 0 && (
-            <div className="mt-6">
+          {habitPlan && habitPlan.habitPlan.length > 0 && (
+              <div className="mt-6">
               <h2 className="text-xl font-bold mb-4">Your Personalized Habit Plan</h2>
                 {habitPlan.habitPlan.map((plan, index) => (
                 <Accordion type="single" collapsible className="w-full">
@@ -90,7 +94,7 @@ const HabitsPage = () => {
                     </AccordionItem>
                 </Accordion>
                 ))}
-            </div>
+              </div>
           )}
         </CardContent>
       </Card>

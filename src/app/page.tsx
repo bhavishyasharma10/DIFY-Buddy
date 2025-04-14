@@ -1,52 +1,29 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { useUserStore } from '@/lib/zustand/useUserStore';
-import LoginPage from './login';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {format} from 'date-fns';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
-import { useHandleNewEntry } from '@/hooks/usehandleNewEntry'
-import { useEntryStore } from '@/lib/zustand/useEntryStore'
-import { useHabitSuggestionStore } from '@/lib/zustand/useHabitSuggestionStore'
+import { useHandleNewEntry } from '@/hooks/usehandleNewEntry';
+import { useEntryStore } from '@/lib/zustand/useEntryStore';
+import { useHabitSuggestionStore } from '@/lib/zustand/useHabitSuggestionStore';
 
 export default function Home() {
-  const { user, setUser } = useUserStore();
+  const { user } = useUserStore();
   const [input, setInput] = useState('');  
   const { handleNewEntry } = useHandleNewEntry();
   const { entries, fetchEntries, addEntryToStore } = useEntryStore(state => state)
   const { habitSuggestions, fetchHabitSuggestions } = useHabitSuggestionStore(state => state)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser({
-          id: user.uid,
-          email: user.email,
-          name: user.displayName,
-        });
-      } else {
-        setUser(null);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      fetchEntries(user.id);
+    if (user?.id) {
+      fetchEntries();
+      fetchHabitSuggestions();
     }
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      fetchHabitSuggestions(user.id);
-    }
-  }, []);
+  }, [user]);
 
   const sendMessage = async () => {
     if (input.trim() !== '' && user) {
@@ -67,10 +44,6 @@ export default function Home() {
   const handleSaveHabit = (habit: string, plan: {goal: string; steps: string[]}) => {
     // Implement logic to save habit
   };
-
-  if (!user) {
-    return <LoginPage />;
-  }
 
   return (<div className="container mx-auto p-4">
       <Card className="w-full max-w-2xl mx-auto">
