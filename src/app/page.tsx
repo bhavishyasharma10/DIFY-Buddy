@@ -1,35 +1,57 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import useUserStore from '@/lib/zustand/useUserStore';
+import LoginPage from './login';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {format} from 'date-fns';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
-import { useHandleNewEntry } from '@/hooks/usehandleNewEntry';
-import { useEntryStore } from '@/lib/zustand/useEntryStore';
-import { useHabitSuggestionStore } from '@/lib/zustand/useHabitSuggestionStore';
+import { useHandleNewEntry } from '@/hooks/usehandleNewEntry'
+import { useEntryStore } from '@/lib/zustand/useEntryStore'
+import { useHabitSuggestionStore } from '@/lib/zustand/useHabitSuggestionStore'
 
 export default function Home() {
-  const [userId, setUserId] = useState('1');
-  const [input, setInput] = useState('');
-  const { handleNewEntry } = useHandleNewEntry(); 
-  const { entries, fetchEntries, addEntryToStore } = useEntryStore(state => state);
-  const { habitSuggestions, fetchHabitSuggestions } = useHabitSuggestionStore(state => state);
-  
+  const { user, setUser } = useUserStore();
+  const [input, setInput] = useState('');  
+  const { handleNewEntry } = useHandleNewEntry();
+  const { entries, fetchEntries, addEntryToStore } = useEntryStore(state => state)
+  const { habitSuggestions, fetchHabitSuggestions } = useHabitSuggestionStore(state => state)
+
   useEffect(() => {
-    fetchEntries(userId);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser({
+          id: user.uid,
+          email: user.email,
+          name: user.displayName,
+        });
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    fetchHabitSuggestions(userId);
+    if (user) {
+      fetchEntries(user.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchHabitSuggestions(user.id);
+    }
   }, []);
 
   const sendMessage = async () => {
-    if (input.trim() !== '') {
+    if (input.trim() !== '' && user) {
       try {
-        const { actionMessages } = await handleNewEntry(input, userId);
-
+        const { actionMessages } = await handleNewEntry(input, user.id);
         addEntryToStore({
           id: '',
           content: actionMessages.length > 0 ? `Here's what I understood: \n ${actionMessages.join('\n')}` : 'No actions taken.',
@@ -46,8 +68,11 @@ export default function Home() {
     // Implement logic to save habit
   };
 
-  return (
-    <div className="container mx-auto p-4">
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return (<div className="container mx-auto p-4">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle>My Journal</CardTitle>
@@ -116,8 +141,7 @@ export default function Home() {
               </AccordionContent>
             </AccordionItem>
           ))}
-        </Accordion>
-      )}
-    </div>
-  );
-}
+        </Accordion>)}
+    </div>);
+  }
+
