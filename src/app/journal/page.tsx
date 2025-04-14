@@ -1,17 +1,19 @@
 'use client';
 
-import React, {useState, useEffect, useMemo} from 'react';
+import React, { useEffect, useMemo} from 'react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Badge} from '@/components/ui/badge';
 import { useJournalStore } from '@/lib/zustand/useJournalStore';
 import { useTodoStore } from '@/lib/zustand/useTodoStore';
 import { ParseJournal } from '@/ai/flows/intent';
+import { useUserStore } from '@/lib/zustand/useUserStore';
 
 const JournalPage: React.FC = () => {
+  const { user } = useUserStore();
   const { journals, fetchJournals } = useJournalStore();  
   const { todos, fetchTodos, updateTodo } = useTodoStore();
-  const userId = '1';
+  const userId = user?.id ?? '';
 
   const journalEntries = useMemo(() => {
     return journals.reduce((acc: ParseJournal, item) => {
