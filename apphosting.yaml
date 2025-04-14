@@ -1,23 +1,53 @@
-# Settings for Backend (on Cloud Run).
-# See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 runConfig:
   minInstances: 0
-  # maxInstances: 100
-  # concurrency: 80
-  # cpu: 1
-  # memoryMiB: 512
 
-# Environment variables and secrets.
-# env:
-  # Configure environment variables.
-  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
+env:
+  # ✅ Client-exposed Firebase config (safe with NEXT_PUBLIC_)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyBSPIj9mH-SwGnzU8SoIzfwUpkBy8NxiqA
+    availability:
+      - BUILD
+      - RUNTIME
 
-  # Grant access to secrets in Cloud Secret Manager.
-  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
-  # - variable: MY_SECRET
-  #   secret: mySecretRef
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: lazyjournal-67b18.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: lazyjournal-67b18
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: lazyjournal-67b18.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: 239403413761
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:239403413761:web:1b11566e759367be762b00
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-1H70WV1C7Y
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # 🔒 Server-only Genkit API key (DO NOT expose publicly)
+  - variable: GOOGLE_GENAI_API_KEY
+    value: projects/239403413761/secrets/GOOGLE_GENAI_API_KEY
+    availability:
+      - BUILD 
+      - RUNTIME  
