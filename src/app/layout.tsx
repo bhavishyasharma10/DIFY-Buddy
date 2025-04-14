@@ -1,8 +1,15 @@
-import type {Metadata} from 'next';
-import {Geist, Geist_Mono} from 'next/font/google';
+'use client';
+
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
-import {cn} from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useUserStore } from '@/lib/zustand/useUserStore';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -14,16 +21,33 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: 'DIFY Buddy',
   description: "I'll do it for you, buddy!",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const { setUser } = useUserStore((state) => state);
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser({
+          id: currentUser.uid,
+          email: currentUser.email,
+          name: currentUser.displayName,
+        });
+        router.push('/'); 
+      } else {
+        setUser(null);
+        router.push('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [setUser, router]);
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -32,7 +56,7 @@ export default function RootLayout({
             <li>
               <Link
                 href="/"
-                className={cn(
+                className={cn(  
                   'text-foreground',
                   'hover:text-primary',
                   'transition-colors duration-200',

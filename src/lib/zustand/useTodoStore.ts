@@ -1,10 +1,11 @@
 import { getTodos } from "../firestore/todos";
 import { UITodo } from "../types/todo"
 import { create } from "zustand";
+import { useUserStore } from "./useUserStore";
 
 type TodoStore = {
     todos: UITodo[],
-    fetchTodos: (userId: string) => Promise<void>,
+    fetchTodos: () => Promise<void>,
     addTodoToStore: (todo: UITodo) => Promise<void>,
     updateTodo: (todo: UITodo) => Promise<void>
 }
@@ -12,8 +13,13 @@ type TodoStore = {
 export const useTodoStore = create<TodoStore>((set, get) => ({
     todos: [],
 
-    fetchTodos: async (userId) => {
-        const todos = await getTodos(userId);
+    fetchTodos: async () => {
+        const { user } = useUserStore.getState();
+        if (!user?.id) {
+          set({ todos: [] });
+          return;
+        }
+        const todos = await getTodos(user.id);
         set({ todos });
     },
 

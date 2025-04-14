@@ -1,18 +1,26 @@
 import { create } from "zustand";
 import { UIHabitSuggestion } from "../types/habitSuggestion";
 import { getHabitSuggestions } from "../firestore/habitSuggestions";
+import { useUserStore } from "./useUserStore";
 
 type HabitSuggestionStore = {
     habitSuggestions: UIHabitSuggestion[];
-    fetchHabitSuggestions: (userId: string) => Promise<void>;
+    fetchHabitSuggestions: () => Promise<void>;
     addHabitSuggestionToStore: (habitSuggestion: UIHabitSuggestion) => Promise<void>;
 }
 
 export const useHabitSuggestionStore = create<HabitSuggestionStore>((set, get) => ({
     habitSuggestions: [],
 
-    fetchHabitSuggestions: async (userId) => {
-        const habitSuggestions = await getHabitSuggestions(userId);
+    fetchHabitSuggestions: async () => {
+        const { user } = useUserStore.getState();
+
+        if (!user?.id) {
+            set({ habitSuggestions: [] });
+            return;
+        }
+
+        const habitSuggestions = await getHabitSuggestions(user.id);
         set({ habitSuggestions });
     },
 
