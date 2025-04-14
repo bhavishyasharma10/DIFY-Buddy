@@ -1,185 +1,95 @@
 'use client';
 
-import {useState, useEffect} from 'react';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {Checkbox} from '@/components/ui/checkbox';
-import {Label} from '@/components/ui/label';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {useToast} from '@/hooks/use-toast';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
-import {db} from '@/lib/firebase';
-import {collection, getDocs, updateDoc, doc} from 'firebase/firestore';
+import { useHabitSuggestionStore } from '@/lib/zustand/useHabitSuggestionStore';
+import { useJournalStore } from '@/lib/zustand/useJournalStore';
+import { useUserStore } from '@/lib/zustand/useUserStore';
+import { use } from 'react';
 import { Button } from '@/components/ui/button';
+import { parseHabitPlan } from '@/ai/flows/habitPlanner';
+import {ParseHabitPlanOutput} from '@/ai/flows/habitPlanner';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-interface HabitData {
-  id: string;
-  habit: string;
-  reason: string;
-  plan: {
-    goal: string;
-    steps: string[];
-  };
-  checkIns: boolean[];
-  trackingStarted: boolean;
-  saved: boolean;
-}
 
 const HabitsPage = () => {
-  const [habits, setHabits] = useState<HabitData[]>([]);
-  const {toast} = useToast();
+  const { toast } = useToast();
+  const habitSuggestions = useHabitSuggestionStore(state => state.habitSuggestions);
+  const userPreferences = useUserStore(state => state.user?.preferences) || {};
+  const userGoals = useUserStore(state => state.user?.goals) || [];
+  const userStruggles = useUserStore(state => state.user?.struggles) || [];
+  const journalEntries = useJournalStore(state => state.journals.map((journal) => journal.entry))
+  const [habitPlan, setHabitPlan] = useState<ParseHabitPlanOutput | null>(null);
+
 
   useEffect(() => {
-    const fetchHabits = async () => {
-      try {
-        const habitsCollection = collection(db, 'habits');
-        const habitsSnapshot = await getDocs(habitsCollection);
-        const habitsList = habitsSnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            habit: data.habit,
-            reason: data.reason,
-            plan: {
-              goal: data.plan.goal,
-              steps: data.plan.steps,
-            },
-            checkIns: data.checkIns,
-            trackingStarted: data.trackingStarted,
-            saved: data.saved,
-          };
-        });
-        setHabits(habitsList);
-      } catch (error) {
-        console.error('Error fetching habits:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load habits. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    };
-    fetchHabits();
-  }, [toast]);
+      console.log({ userPreferences, userGoals, userStruggles, journalEntries })
+  }, [])
 
-  const handleStartTracking = async (id: string) => {
+  const handleGeneratePlan = async () => {
     try {
-      const habitRef = doc(db, 'habits', id);
-      await updateDoc(habitRef, {trackingStarted: true, checkIns: Array(habits.find(habit => habit.id === id)?.plan.steps.length).fill(false)});
-      setHabits(prevHabits =>
-        prevHabits.map(habit =>
-          habit.id === id ? {...habit, trackingStarted: true, checkIns: Array(habit.plan.steps.length).fill(false)} : habit
-        )
-      );
+      const input = {
+        habitSuggestions: habitSuggestions.map(suggestion => ({ habit: suggestion.habit, reason: suggestion.reason })),
+        journalEntries: journalEntries,
+        userPreferences: userPreferences,
+        userGoals: userGoals,
+        userStruggles: userStruggles,
+      };
+
+      const plan = await parseHabitPlan(input);
+      setHabitPlan(plan);
+      console.log({ plan });
       toast({
-        title: 'Tracking Started',
-        description: 'You have started tracking your habit.',
+        title: 'Habit Plan Generated',
+        description: 'Your personalized habit plan has been created.',
       });
     } catch (error) {
-      console.error('Error starting tracking:', error);
+      console.error('Error generating habit plan:', error);
       toast({
         title: 'Error',
-        description: 'Failed to start tracking. Please try again.',
+        description: 'Failed to generate habit plan. Please try again.',
         variant: 'destructive',
       });
     }
-  };
-
-  const handleCheckIn = async (habitId: string, index: number) => {
-    try {
-      const habitRef = doc(db, 'habits', habitId);
-      const habit = habits.find(habit => habit.id === habitId);
-      const updatedCheckIns = [...habit.checkIns];
-      updatedCheckIns[index] = !updatedCheckIns[index];
-
-      await updateDoc(habitRef, {checkIns: updatedCheckIns});
-
-      setHabits(prevHabits =>
-        prevHabits.map(habit => {
-          if (habit.id === habitId) {
-            return {...habit, checkIns: updatedCheckIns};
-          }
-          return habit;
-        })
-      );
-      toast({
-        title: 'Check-in Updated',
-        description: 'Your check-in has been updated.',
-      });
-    } catch (error) {
-      console.error('Error updating check-in:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update check-in. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const calculateStreak = (checkIns: boolean[]) => {
-    let currentStreak = 0;
-    if (checkIns.length > 0) {
-      for (let i = checkIns.length - 1; i >= 0; i--) {
-        if (checkIns[i]) {
-          currentStreak++;
-        } else {
-          break;
-        }
-      }
-    }
-    return currentStreak;
   };
 
   return (
     <div className="container mx-auto p-6">
       <Card className="w-full max-w-3xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Habit Tracking</CardTitle>
+          <CardTitle className="text-2xl font-bold">Habit Suggestions</CardTitle>
         </CardHeader>
         <CardContent className="p-8">
-          {habits.map(habitData => (
-            <Card key={habitData.id} className="mt-6">
-              <CardHeader>
-                <CardTitle>Habit: {habitData.habit}</CardTitle>
-                <p className="text-sm text-gray-600">Reason: {habitData.reason}</p>
+          {habitSuggestions.map((suggestion, index) => (
+            <Card key={index} className="mb-4">
+              <CardHeader className="p-4">
+                <CardTitle>{suggestion.habit}</CardTitle>
               </CardHeader>
-              <CardContent>
-                {!habitData.trackingStarted ? (
-                  <Button onClick={() => handleStartTracking(habitData.id)}>Track Plan</Button>
-                ) : (
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="tracking">
-                      <AccordionTrigger className="text-lg font-semibold">
-                        Actionable Plan & Tracking
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <h3 className="text-lg font-semibold mb-2">
-                          Goal: {habitData.plan.goal}
-                        </h3>
-                        <div className="mb-4">
-                          {habitData.plan.steps.map((step, index) => (
-                            <div key={index} className="flex items-center justify-between py-2">
-                              <div className="flex items-center">
-                                <Checkbox
-                                  id={`checkin-${index}`}
-                                  checked={habitData.checkIns[index] || false}
-                                  onCheckedChange={() => handleCheckIn(habitData.id, index)}
-                                  disabled={!habitData.trackingStarted}
-                                />
-                                <Label htmlFor={`checkin-${index}`} className="ml-2">
-                                  {step}
-                                </Label>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">Current Streak</h3>
-                        <p className="text-gray-700">You have a streak of {calculateStreak(habitData.checkIns)} days!</p>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                )}
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-600">{suggestion.reason}</p>
               </CardContent>
             </Card>
           ))}
+          <div className="mt-6">
+          <Button onClick={handleGeneratePlan}>Generate Habit Plan</Button>
+          </div>
+           {habitPlan && habitPlan.habitPlan.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-xl font-bold mb-4">Your Personalized Habit Plan</h2>
+              <Accordion type="multiple" collapsible className="w-full">
+                {habitPlan.habitPlan.map((plan, index) => (
+                  <AccordionItem key={index} value={`habit-plan-${index}`}>
+                    <AccordionTrigger>{plan.habit}</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-sm text-gray-600">Reason: {plan.reason}</p>
+                      <p className="text-sm text-gray-600 mt-2">Personalized Plan: {plan.personalizedPlan}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
