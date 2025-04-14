@@ -28,6 +28,12 @@ export const handleNewEntry = async (input: string, userId: string) => {
       thoughts: parsedEntry.thoughts,
       reflections: parsedEntry.reflections,
       affirmations: parsedEntry.affirmations,
+      tone: parsedEntry.tone,
+      mood: parsedEntry.mood,
+      energy: parsedEntry.energy,
+      topics: parsedEntry.topics,
+      goals: parsedEntry.goals,
+      struggles: parsedEntry.struggles,
     });
 
     if (hasHighlights) {
