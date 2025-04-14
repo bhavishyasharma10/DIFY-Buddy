@@ -1,43 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {useToast} from '@/hooks/use-toast';
 import { useHabitSuggestionStore } from '@/lib/zustand/useHabitSuggestionStore';
 import { useJournalStore } from '@/lib/zustand/useJournalStore';
-import { useUserStore } from '@/lib/zustand/useUserStore';
-import { use } from 'react';
 import { Button } from '@/components/ui/button';
-import { parseHabitPlan } from '@/ai/flows/habitPlanner';
-import {ParseHabitPlanOutput} from '@/ai/flows/habitPlanner';
+import { habitPlanner, ParseHabitPlanOutput } from '@/ai/flows/habitPlanner';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 const HabitsPage = () => {
   const { toast } = useToast();
-  const habitSuggestions = useHabitSuggestionStore(state => state.habitSuggestions);
-  const userPreferences = useUserStore(state => state.user?.preferences) || {};
-  const userGoals = useUserStore(state => state.user?.goals) || [];
-  const userStruggles = useUserStore(state => state.user?.struggles) || [];
-  const journalEntries = useJournalStore(state => state.journals.map((journal) => journal.entry))
+  const { habitSuggestions } = useHabitSuggestionStore(state => state);
+  const { journals } = useJournalStore(state => state)
   const [habitPlan, setHabitPlan] = useState<ParseHabitPlanOutput | null>(null);
 
-
-  useEffect(() => {
-      console.log({ userPreferences, userGoals, userStruggles, journalEntries })
-  }, [])
-
-  const handleGeneratePlan = async () => {
+  const handleGeneratePlan = async (index: number) => {
     try {
       const input = {
-        habitSuggestions: habitSuggestions.map(suggestion => ({ habit: suggestion.habit, reason: suggestion.reason })),
-        journalEntries: journalEntries,
-        userPreferences: userPreferences,
-        userGoals: userGoals,
-        userStruggles: userStruggles,
+        habitToPlan: [habitSuggestions[index]],
+        journalEntries: journals.map(
+          journal => ({
+            highlights: journal.highlights,
+            gratitudes: journal.gratitudes,
+            thoughts: journal.thoughts,
+            reflections: journal.reflections,
+            affirmations: journal.affirmations,
+            tone: journal.tone,
+            mood: journal.mood,
+            energy: journal.energy,
+            topics: journal.topics,
+            goals: journal.goals,
+            struggles: journal.struggles,
+          })
+        ),
       };
 
-      const plan = await parseHabitPlan(input);
+      const plan = await habitPlanner(input);
       setHabitPlan(plan);
       console.log({ plan });
       toast({
@@ -62,32 +62,34 @@ const HabitsPage = () => {
         </CardHeader>
         <CardContent className="p-8">
           {habitSuggestions.map((suggestion, index) => (
-            <Card key={index} className="mb-4">
-              <CardHeader className="p-4">
-                <CardTitle>{suggestion.habit}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-600">{suggestion.reason}</p>
-              </CardContent>
-            </Card>
+            <React.Fragment key={index}>
+              <Card className="mb-4">
+                <CardHeader className="p-4">
+                  <CardTitle>{suggestion.habit}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <p className="text-sm text-gray-600">{suggestion.reason}</p>
+                </CardContent>
+              </Card>
+              <div className="mt-6">
+                <Button onClick={() => handleGeneratePlan(index)}>Generate Habit Plan</Button>
+              </div>
+            </React.Fragment>
           ))}
-          <div className="mt-6">
-          <Button onClick={handleGeneratePlan}>Generate Habit Plan</Button>
-          </div>
            {habitPlan && habitPlan.habitPlan.length > 0 && (
             <div className="mt-6">
               <h2 className="text-xl font-bold mb-4">Your Personalized Habit Plan</h2>
-              <Accordion type="multiple" collapsible className="w-full">
                 {habitPlan.habitPlan.map((plan, index) => (
-                  <AccordionItem key={index} value={`habit-plan-${index}`}>
-                    <AccordionTrigger>{plan.habit}</AccordionTrigger>
-                    <AccordionContent>
-                      <p className="text-sm text-gray-600">Reason: {plan.reason}</p>
-                      <p className="text-sm text-gray-600 mt-2">Personalized Plan: {plan.personalizedPlan}</p>
-                    </AccordionContent>
-                  </AccordionItem>
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem key={index} value={`habit-plan-${index}`}>
+                      <AccordionTrigger>{plan.habit}</AccordionTrigger>
+                      <AccordionContent>
+                        <p className="text-sm text-gray-600">Reason: {plan.reason}</p>
+                        <p className="text-sm text-gray-600 mt-2">Personalized Plan: {plan.personalizedPlan}</p>
+                      </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
                 ))}
-              </Accordion>
             </div>
           )}
         </CardContent>

@@ -40,6 +40,12 @@ export const useHandleNewEntry = () => {
                 thoughts: parsedEntry.thoughts,
                 reflections: parsedEntry.reflections,
                 affirmations: parsedEntry.affirmations,
+                mood: parsedEntry.mood,
+                energy: parsedEntry.energy,
+                tone: parsedEntry.tone,
+                topics: parsedEntry.topics,
+                goals: parsedEntry.goals,
+                struggles: parsedEntry.struggles,
             });
             await addJournalToStore(savedJournal);
         
