@@ -47,7 +47,7 @@ env:
 
   # 🔒 Server-only Genkit API key (DO NOT expose publicly)
   - variable: GOOGLE_GENAI_API_KEY
-    value: projects/239403413761/secrets/GOOGLE_GENAI_API_KEY
+    secret: GOOGLE_GENAI_API_KEY
     availability:
-      - BUILD 
-      - RUNTIME  
+      - BUILD
+      - RUNTIME
