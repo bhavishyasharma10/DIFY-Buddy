@@ -61,90 +61,92 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Journal Card */}
-      <Card className="w-full max-w-3xl mx-auto rounded-xl shadow-lg md:rounded-2xl">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-2xl font-bold">My Journal</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 space-y-4">
-          <div className="text-sm md:text-base text-muted-foreground">
-            <p>
-              Use this chat interface to create journal entries. Your entries
-              will be parsed and habits will be suggested.
+    <div className="container mx-auto p-4 md:p-6 space-y-8">
+      {/* Journal Section */}
+      <section className="w-full max-w-4xl mx-auto">
+        <Card className="rounded-xl shadow-lg">
+          <CardHeader className="p-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-xl">
+            <CardTitle className="text-3xl font-bold">D.I.F.Y Buddy</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <p className="text-gray-700 text-base">
+            👋 Hey, I'm D.I.F.Y Buddy!
+            I'll keep track of your tasks, habits, thoughts, and plans — I'll Do It For You Buddy!
             </p>
-          </div>
-          <div
-            className="h-[300px] md:h-[400px] overflow-y-auto rounded-lg bg-gray-100 p-3"
-          >
-            <div className="space-y-2">
-              {entries.map((entry, index) => (                
-                <div
-                  key={index}
-                  className="p-3 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors duration-200 md:p-4"
-                  style={{ whiteSpace: "pre-wrap" }}                  
-                >
-                  <div className="text-xs text-gray-500">
-                    {format(entry.createdAt, "MMM dd, yyyy hh:mm a")}
+            <div className="h-[300px] md:h-[400px] overflow-y-auto rounded-lg bg-gray-50 p-4 border border-gray-200">
+              <div className="space-y-4">
+                {entries.map((entry, index) => (
+                  <div
+                    key={index}
+                    className="p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                    style={{ whiteSpace: "pre-wrap" }}
+                  >
+                    <div className="text-xs text-gray-500 mb-2">
+                      {format(entry.createdAt, "MMM dd, yyyy hh:mm a")}
+                    </div>
+                    <div className="text-gray-800">{entry.content}</div>
                   </div>
-                  {entry.content}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 items-center">
-            <Input
-              type="text"
-              placeholder="Enter your thoughts here..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="flex-1"              
-            />          
-            <Button onClick={sendMessage} className="hover:scale-105 transition-transform duration-200">
-              Send
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3 items-center">
+              <Input
+                type="text"
+                placeholder="Enter your thoughts here..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="flex-1 border-gray-300 focus:ring focus:ring-blue-500"
+              />
+              <Button
+                onClick={sendMessage}
+                className="bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200 px-6 py-3 rounded-lg"
+              >
+                Send
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
-      {/* Habit Suggestions */}
+      {/* Habit Suggestions Section */}
       {habitSuggestions.length > 0 && (
-        <div className="max-w-3xl mx-auto space-y-4">
-          <h2 className="text-xl font-bold md:text-2xl">Habit Suggestions</h2>
-          <Accordion type="single" collapsible className="space-y-2 md:space-y-3">
+        <section className="w-full max-w-4xl mx-auto space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800">Habit Suggestions</h2>
+          <Accordion
+            type="single"
+            collapsible
+            className="space-y-4"
+          >
             {habitSuggestions.map((habitData) => (
               <AccordionItem
                 key={habitData.id}
                 value={habitData.id}
-                className="border rounded-lg shadow-md md:rounded-xl md:shadow-lg"
+                className="border rounded-lg shadow-md"
               >
-                <AccordionTrigger className="py-3 px-4 flex items-center justify-between hover:bg-gray-100 transition-colors duration-200 md:py-4 md:px-6">
-                  <CardHeader className="flex-1 p-0 ">
-                    <CardTitle className="text-lg md:text-xl font-semibold text-primary">
+                <AccordionTrigger className="py-4 px-6 flex items-center justify-between bg-gray-100 hover:bg-gray-200 transition-colors duration-200">
+                  <CardHeader className="flex-1 p-0">
+                    <CardTitle className="text-lg font-semibold text-gray-800">
                       {habitData.habit}
                     </CardTitle>
                   </CardHeader>
                 </AccordionTrigger>
-                <AccordionContent className="p-4 bg-gray-50 rounded-b-lg md:p-6">
-                  <CardContent className="space-y-2 md:space-y-3">
-                    <p className="text-gray-700 md:text-lg">
+                <AccordionContent className="p-6 bg-gray-50 rounded-b-lg">
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-700">
                       <strong>Reason:</strong> {habitData.reason}
                     </p>
-                    <p className="text-gray-700 md:text-lg">
+                    <p className="text-gray-700">
                       <strong>Goal:</strong> {habitData.plan.goal}
                     </p>
-                    <ul className="list-disc pl-5 space-y-1">
+                    <ul className="list-disc pl-5 space-y-2">
                       {habitData.plan.steps.map((step, index) => (
-                        <li
-                          key={`${step}-${index}`}
-                          className="text-gray-600"
-                        >
+                        <li key={`${step}-${index}`} className="text-gray-600">
                           {step}
                         </li>
                       ))}
                     </ul>
                     <Button
-                      className="bg-primary text-white hover:bg-primary/90 hover:scale-105 transition-transform duration-200 md:px-6 md:py-3"
+                      className="bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200 px-6 py-3 rounded-lg"
                       onClick={() =>
                         handleSaveHabit(habitData.habit, habitData.plan)
                       }
@@ -156,7 +158,7 @@ export default function Home() {
               </AccordionItem>
             ))}
           </Accordion>
-        </div>
+        </section>
       )}
     </div>
   );
