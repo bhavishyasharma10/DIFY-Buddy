@@ -65,12 +65,9 @@ const JournalPage: React.FC = () => {
                         />
                         <label
                           htmlFor={`todo-${index}`}
-                          className={
-                            `text-sm font-medium leading-none ${
-                              todo.status === 'completed'
-                                ? 'text-gray-500 line-through'
-                                : 'text-gray-800'
-                            }`
+                          className={`text-sm font-medium leading-none ${
+                            todo.status === 'completed'
+                              ? 'text-gray-500 line-through'
                               : 'text-gray-800'
                           }`}>
                           {todo.text}
