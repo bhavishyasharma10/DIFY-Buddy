@@ -42,54 +42,62 @@ const HabitsPage = () => {
       };
 
       const plan = await habitPlanner(input);
-      setHabitPlan(plan);
-      console.log({ plan });
       toast({
         title: 'Habit Plan Generated',
         description: 'Your personalized habit plan has been created.',
       });
+      setHabitPlan(plan);
     } catch (error) {
       console.error('Error generating habit plan:', error);
       toast({
         title: 'Error',
         description: 'Failed to generate habit plan. Please try again.',
         variant: 'destructive',
-      });
-    }
+      });    }
   }; 
 
   return (
-    <div className="container mx-auto p-6">
-      <Card className="w-full max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Habit Suggestions</CardTitle>
+    <div className="container mx-auto p-4 md:p-6">
+      <Card className="w-full max-w-3xl mx-auto rounded-lg shadow-md">
+        <CardHeader className="space-y-1 p-4 md:p-6">
+          <CardTitle className="text-2xl font-bold md:text-3xl">Habit Suggestions</CardTitle>
+          <p className="text-sm text-muted-foreground md:text-base">
+              Explore these habit suggestions and generate a personalized plan tailored to your needs.
+            </p>
         </CardHeader>
-        <CardContent className="p-8">
+        <CardContent className="p-4 md:p-6">
+        <div className="mb-6 md:mb-8">
           {habitSuggestions.map((suggestion) => (
-            <React.Fragment key={suggestion.id}>
-              <Card className="mb-4">
-                <CardHeader className="p-4">
-                  <CardTitle>{suggestion.habit}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <p className="text-sm text-gray-600">{suggestion.reason}</p>
-                </CardContent>
-              </Card>
-                <div className="mt-6">
-                  <Button onClick={() => handleGeneratePlan(suggestion)}>Generate Habit Plan</Button>
-                </div>
-            </React.Fragment>
-          ))}
-          {habitPlan && habitPlan.habitPlan.length > 0 && (
-              <div className="mt-6">
-              <h2 className="text-xl font-bold mb-4">Your Personalized Habit Plan</h2>
-                {habitPlan.habitPlan.map((plan, index) => (
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem key={index} value={`habit-plan-${index}`}>
-                      <AccordionTrigger>{plan.habit}</AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-gray-600">Reason: {plan.reason}</p>
-                        <p className="text-sm text-gray-600 mt-2">Personalized Plan: {plan.personalizedPlan}</p>
+            <Card key={suggestion.id} className="mb-4 rounded-lg hover:shadow-lg transition-shadow duration-300">
+              <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 md:p-4">
+                <CardTitle className="text-lg font-semibold md:text-xl">{suggestion.habit}</CardTitle>
+
+                <Button
+                  onClick={() => handleGeneratePlan(suggestion)}
+                  className="mt-2 md:mt-0 hover:scale-105 transition-transform duration-200"
+                >
+                  Generate Habit Plan
+                </Button>
+              </CardHeader>
+              <CardContent className="p-3 md:p-4">
+                <p className="text-sm text-gray-600 md:text-base">{suggestion.reason}</p>
+              </CardContent>
+            </Card>
+          ))}</div>
+
+            {habitPlan && habitPlan.habitPlan.length > 0 && (
+            <div className="mt-6 md:mt-8">
+              <h3 className="text-xl font-bold mb-4 md:text-2xl">Your Personalized Habit Plan</h3>
+              {habitPlan.habitPlan.map((plan, index) => (
+                <Accordion key={index} type="single" collapsible className="w-full">
+                  <AccordionItem value={`habit-plan-${index}`}>
+                    <AccordionTrigger className="hover:bg-gray-100 rounded-lg p-3 md:p-4">
+                      <span className="font-medium md:text-lg">{plan.habit}</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="space-y-2 p-3 md:p-4">
+                      <p className="text-sm text-gray-600 md:text-base">Reason: {plan.reason}</p>
+                      <p className="text-sm text-gray-600 mt-2 md:text-base">Personalized Plan: {plan.personalizedPlan}</p>
+
                       </AccordionContent>
                     </AccordionItem>
                 </Accordion>
@@ -97,7 +105,7 @@ const HabitsPage = () => {
               </div>
           )}
         </CardContent>
-      </Card>
+      </Card>      
     </div>
   );
 };
